@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block head %}
+{% endblock %}
+
+
+
+{% block body %}
+<div class="content">
+    <h1>Flask SocketIO Test </h1>
+    <ul id="messages"></ul>
+    <input type="text" id="myMessage">
+    <button id="sendButton">Send</button>
+</div>
+<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
+    integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+<script type="text/javascript" charset="utf-8">
+    var socket = io.connect('https://paulpirieflaskapp.herokuapp.com:5000');
+
+    socket.on('connect', function () {
+        socket.send('User has connected!');
+    });
+
+    socket.on('message', function (msg) {
+        li_ele = document.createElement("li");
+        text_ele = document.createTextNode(msg);
+        li_ele.appendChild(text_ele)
+        document.querySelector('#messages').appendChild(li_ele);
+        console.log("Recieved Message");
+    });
+
+    document.querySelector('#sendButton').addEventListener('click', function () {
+        socket.send(document.querySelector('#myMessage').value);
+        document.querySelector('#myMessage').value = " ";
+        console.log("Clicked!")
+    });
+</script>
+{% endblock %}

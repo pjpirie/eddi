@@ -1,10 +1,13 @@
 from flask import Flask, render_template, url_for, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from flask_socketio import SocketIO, send, emit
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 db = SQLAlchemy(app)
+app.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(app)
 
 class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -14,6 +17,13 @@ class Todo(db.Model):
 
     def __repr__(self):
         return '<Task %r>' % self.id
+
+@socketio.on('message')
+def handle_message(msg):
+    print('Message:' + msg)
+    send(msg, broadcast=True)
+
+
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
@@ -55,5 +65,10 @@ def update(id):
     else:
         return render_template('update.html', task=task)
 
+@app.route('/io/')
+def s_io():
+    return render_template('socketio.html')
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    # app.run(debug=True)
+    socketio.run(app)
