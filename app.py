@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 db = SQLAlchemy(app)
 app.config['SECRET_KEY'] = 'secret!'
-socketio =  SocketIO(app, async_mode='eventlet', cors_allowed_origins="*")
+socketio = SocketIO(app)
 socketio.listen(evn.process.PORT || 5000)
 
 
