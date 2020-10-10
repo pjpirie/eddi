@@ -11,6 +11,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 db = SQLAlchemy(app)
 app.config['SECRET_KEY'] = 'secret!'
 socketio =  SocketIO(app, async_mode='eventlet', cors_allowed_origins="*")
+socketio.listen(evn.process.PORT || 5000)
 
 
 class Todo(db.Model):
