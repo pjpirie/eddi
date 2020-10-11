@@ -23,10 +23,10 @@
     //     transports: ['websocket']
     // });
 
-    socket.on('reconnect_attempt', function () {
-        socket.io.opts.transports = ['polling', 'websocket'];
-        print("Reconnection Attempt");
-    });
+    // socket.on('reconnect_attempt', function () {
+    //     socket.io.opts.transports = ['polling', 'websocket'];
+    //     print("Reconnection Attempt");
+    // });
 
     socket.on('connect', function () {
         socket.send('User has connected!');
