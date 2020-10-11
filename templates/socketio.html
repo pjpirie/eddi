@@ -15,9 +15,18 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
     integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
 <script type="text/javascript" charset="utf-8">
-    const socket = io('https://paulpirieflaskapp.herokuapp.com');
+    const socket = io('https://paulpirieflaskapp.herokuapp.com', {
+        transports: ['websocket']
+    });
 
-    // const socket = io.connect('http://127.0.0.1:5000');
+    // const socket = io('http://127.0.0.1:5000', {
+    //     transports: ['websocket']
+    // });
+
+    socket.on('reconnect_attempt', function () {
+        socket.io.opts.transports = ['polling', 'websocket'];
+        print("Reconnection Attempt");
+    });
 
     socket.on('connect', function () {
         socket.send('User has connected!');
