@@ -15,17 +15,11 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
     integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
 <script type="text/javascript" charset="utf-8">
-    var socket = io('https://paulpirieflaskapp.herokuapp.com', {
-        transports: ['websocket']
-    });
-
-    // var socket = io.connect('http://127.0.0.1:5000');
-
+    var socket = io('https://paulpirieflaskapp.herokuapp.com');
     socket.on('connect', function () {
         socket.send('User has connected!');
         console.log("Connected");
     });
-
     socket.on('message', function (msg) {
         li_ele = document.createElement("li");
         text_ele = document.createTextNode(msg);
@@ -33,7 +27,6 @@
         document.querySelector('#messages').appendChild(li_ele);
         console.log("Recieved Message");
     });
-
     document.querySelector('#sendButton').addEventListener('click', function () {
         socket.send(document.querySelector('#myMessage').value);
         document.querySelector('#myMessage').value = " ";
