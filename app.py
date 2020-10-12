@@ -32,6 +32,11 @@ def handle_connect(json):
     print('Recieved Something:' + str(json))
     socketio.emit('user_connect_reply', json)
 
+@socketio.on('editor_change')
+def handle_editor_change(json):
+    socketio.emit('ec_update', json)
+    print('E-C: ' + str(json))
+
 @app.route('/', methods=['POST', 'GET'])
 def index():
     if request.method == 'POST':
@@ -76,6 +81,10 @@ def update(id):
 def s_io():
     return render_template('socketio.html')
 
+@app.route('/editor/')
+def editor():
+    return render_template('editor.html')
+
 if __name__ == "__main__":
-    app.run(debug=True)
-    # socketio.run(app, debug=True)
+    # app.run(debug=True)
+    socketio.run(app, debug=True)
