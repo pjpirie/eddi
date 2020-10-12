@@ -27,7 +27,10 @@ def handle_message(msg):
     print('Message:' + msg)
     send(msg, broadcast=True)
 
-
+@socketio.on('user_connect')
+def handle_connect(json):
+    print('Recieved Something:' + str(json))
+    socketio.emit('user_connect_reply', json)
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
