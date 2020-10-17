@@ -21,32 +21,19 @@
         var x = "All this is syntax highlighted";
         return x;
         }</div>
-
-    <script src="{{ url_for('static', filename='js/ace.js') }}" type="text/javascript" charset="utf-8"></script>
+    
     <script>
-        var editor = ace.edit("editor");
-        let last_change = null;
-        editor.setTheme("ace/theme/monokai");
-        editor.session.setMode("ace/mode/javascript");
-        editor.session.on('change', function (delta) {
-            console.log(delta);
-            socket.emit('editor_change', delta);
-        });
-
-
-        socket.on('ec_update', function (json) {
-            const rs = json.start.row;
-            const cs = json.start.column;
-            const re = json.end.row;
-            const ce = json.end.column;
-            if (json.action == "insert") {
-                editor.session.replace(new ace.Range(rs, cs, re, ce),
-                    json.lines[0]);
-            } else if (json.action == "remove") {
-                editor.session.remove(new ace.Range(rs, cs, re, ce))
-            }
-            console.log("Editor Updated");
-        });
+        sessionStorage.clear();
+        if(sessionStorage.getItem('UID') == (null || undefined)){
+            sessionStorage.setItem('UID', Math.random() * 10000000000000000);
+            console.log("[E] UID Created");
+        }else{
+            console.log("[E] UID Exists");
+        }
+        // console.log(document.cookie)
+        // const UID = 
     </script>
+    <script src="{{ url_for('static', filename='js/ace.js') }}" type="text/javascript" charset="utf-8"></script>
+    <script src="{{ url_for('static', filename='js/socket-editor.js') }}" type="text/javascript" charset="utf-8"></script>
 </div>
 {% endblock %}
