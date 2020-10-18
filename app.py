@@ -86,5 +86,5 @@ def editor():
     return render_template('editor.html')
 
 if __name__ == "__main__":
-    app.run(debug=True)
-    # socketio.run(app, debug=True)
+    app.run()
+    #socketio.run(app, debug=True)

@@ -1,5 +1,6 @@
-const socket = io.connect('http://eddi.live');
+// const socket = io.connect('http://eddi.live');
 // const socket = io.connect('http://127.0.0.1:5000');
+const socket = io.connect('http://webtech-47.napier.ac.uk:5000');
 
 socket.on('connect', function () {
     socket.emit('user_connect', {
