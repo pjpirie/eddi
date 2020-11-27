@@ -50,11 +50,7 @@ class RegisterForm(FlaskForm):
     password = PasswordField('Password', validators=[InputRequired('Password is required'),Length(min=8, max=80)])
     confirm_password = PasswordField('Confirm Password', validators=[InputRequired('Password Confirmation is required'),Length(min=8, max=80)])
 
-# #### Database ####
-
-# class Todo(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     content = db.Column(db.String(200), nullable=False)
+git  db.Column(db.String(200), nullable=False)
 #     completed = db.Column(db.Integer, default=0)
 #     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
