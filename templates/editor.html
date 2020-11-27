@@ -14,26 +14,38 @@
 
 
 
+{% block controls %}
+<div id="editor-controls">
+    <div class="control-button" id="control-clear">
+        <p>Clear</p>
+    </div>
+    <div class="control-button" id="control-run">
+        <p>Run</p>
+    </div>
+    <div class="control-button" id="control-save">
+        <p>save</p>
+    </div>
+</div>
+{% endblock %}
 {% block body %}
-<div class="content">
-    <h1>Editor Test</h1>
-    <div id="editor">function foo(items) {
-        var x = "All this is syntax highlighted";
-        return x;
-        }</div>
-    
-    <script>
-        sessionStorage.clear();
-        if(sessionStorage.getItem('UID') == (null || undefined)){
-            sessionStorage.setItem('UID', Math.random() * 10000000000000000);
-            console.log("[E] UID Created");
-        }else{
-            console.log("[E] UID Exists");
-        }
+<div id="editor">
+    function foo(items) {
+    var x = "All this is syntax highlighted";
+    return x;
+    }
+</div>
+
+<script>
+    // sessionStorage.clear();
+    if (sessionStorage.getItem('UID') == (null || undefined)) {
+        sessionStorage.setItem('UID', Math.random() * 10000000000000000);
+        console.log("[E] UID Created");
+    } else {
+        console.log("[E] UID Exists");
+    }
         // console.log(document.cookie)
         // const UID = 
-    </script>
-    <script src="{{ url_for('static', filename='js/ace.js') }}" type="text/javascript" charset="utf-8"></script>
-    <script src="{{ url_for('static', filename='js/socket-editor.js') }}" type="text/javascript" charset="utf-8"></script>
-</div>
+</script>
+<script src="{{ url_for('static', filename='js/ace.js') }}" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for('static', filename='js/socket-editor.js') }}" type="text/javascript" charset="utf-8"></script>
 {% endblock %}
