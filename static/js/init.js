@@ -58,18 +58,19 @@ function changeRoom(roomID) {
     } else {
         try {
             socket.emit('room_leave', JSON.stringify({ 'UID': UID, 'room': sessionStorage.getItem('room') }));
-            console.log('Success: Left Room ' + roomID);
+            console.log('Success: Left Room ' + sessionStorage.getItem('room'));
+            try {
+                socket.emit('room', JSON.stringify(data));
+                console.log('Success: Changed Rooms to ' + roomID);
+                sessionStorage.setItem('room', roomID)
+            } catch (e) {
+                console.log('Failed: Changed Rooms | Reason:' + e);
+            }
         } catch (e) {
             console.log('Failed: Leave Room | Reason:' + e);
         }
 
-        try {
-            socket.emit('room', JSON.stringify(data));
-            console.log('Success: Changed Rooms to ' + roomID);
-            sessionStorage.setItem('room', roomID)
-        } catch (e) {
-            console.log('Failed: Changed Rooms | Reason:' + e);
-        }
+
     }
 
 }

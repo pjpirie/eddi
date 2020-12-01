@@ -1,7 +1,7 @@
 from flask import Flask, render_template, url_for, request, redirect, session, Blueprint
 from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
+from app import db
+# db = SQLAlchemy()
 
 #### Database ####
 
@@ -15,7 +15,7 @@ db = SQLAlchemy()
 #         return '<Task %r>' % self.id
 
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, primary_key=True)
     username = db.Column(db.String(200), nullable=False, unique=True)
     email = db.Column(db.String(200), nullable=False, unique=True)
     password = db.Column(db.String(200), nullable=False)
@@ -26,7 +26,7 @@ class User(db.Model):
 class Document(db.Model):
     id = db.Column(db.String, primary_key=True)
     state = db.Column(db.Text, nullable=False)
-    owner_Id = db.Column(db.String, nullable=False)
+    owner_Id = db.Column(db.String,db.ForeignKey('user.id'), nullable=False)
     allowed_Ids = db.Column(db.String, nullable=True)
 
     def __repr__(self):

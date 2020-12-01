@@ -12,9 +12,9 @@ from wtforms.validators import InputRequired, Email, Length
 from werkzeug.security import generate_password_hash, check_password_hash
 from geventwebsocket import WebSocketServer, WebSocketError
 import json
+import uuid
 # from users.routes import users
 # from users.db import user_db, User
-from main.db import db, User, Document
 # from sockets.socket_listeners import sockets, socketio
 
 
@@ -22,12 +22,13 @@ from main.db import db, User, Document
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = 'false'
-# db = SQLAlchemy(app)
+db = SQLAlchemy(app)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
 
+from main.db import User, Document
 #### Main Blueprint####
-db.init_app(app) #Inits The db variable in main/db.py
+# db.init_app(app) #Inits The db variable in main/db.py
 
 #### Socket IO Blueprint####
 # app.register_blueprint(sockets)
@@ -50,43 +51,30 @@ class RegisterForm(FlaskForm):
     password = PasswordField('Password', validators=[InputRequired('Password is required'),Length(min=8, max=80)])
     confirm_password = PasswordField('Confirm Password', validators=[InputRequired('Password Confirmation is required'),Length(min=8, max=80)])
 
-git  db.Column(db.String(200), nullable=False)
-#     completed = db.Column(db.Integer, default=0)
-#     date_created = db.Column(db.DateTime, default=datetime.utcnow)
-
-#     def __repr__(self):
-#         return '<Task %r>' % self.id
-
-# class User(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     username = db.Column(db.String(200), nullable=False, unique=True)
-#     email = db.Column(db.String(200), nullable=False, unique=True)
-#     password = db.Column(db.String(200), nullable=False)
-
-#     def __repr__(self):
-#         return 'ID: %r' % self.id
-
-# class Document(db.Model):
-#     id = db.Column(db.String, primary_key=True)
-#     state = db.Column(db.Text, nullable=False)
-#     owner_Id = db.Column(db.String, nullable=False)
-#     allowed_Ids = db.Column(db.String, nullable=True)
-
-#     def __repr__(self):
-#         return 'ID: %r' % self.id
-
-
-
 #### Socket IO ####
-@socketio.on('save_document_reply')
-def handle_debug(dataPackage):
+@socketio.on('clear_document_server')
+def handle_clear(dataPackage):
+    converted_obj = json.loads(dataPackage)
+    if isAllowedInDoc(converted_obj['UID'], converted_obj['room']):
+        print('Clear Document Request[ ' + converted_obj['room'] + ' ]')
+        user = User.query.filter_by(id=converted_obj['UID']).first()
+        socketio.emit('clear_document_client', user.username, room=converted_obj['room'])
+    else:
+        socketio.emit('error_message', "Not Authorised", room=converted_obj['room'])
+
+@socketio.on('save_document_server')
+def handle_save_document_server(dataPackage):
     converted_obj = json.loads(dataPackage)
     print('Save Document Request[ ' + converted_obj['room'] + ' ]')
     doc = Document.query.filter_by(id=converted_obj['room']).first()
-    print('DOC [ ' + doc + ' ]')
-    Document.update().values(state=converted_obj['editorState']).where(id=doc.id)
-    # db.session.add(new_user)
-    # db.session.commit()
+    print('DOC [ ' + doc.id + ' ]')
+    doc.state = converted_obj['editorState']
+    db.session.commit()
+    socketio.emit('save_document_server_responce', True, room=converted_obj['room'])
+
+@socketio.on('force_save_document_server')
+def handle_force_save_document_server(room):
+    socketio.emit('save_document_client', {'room': room}, room=room)
 
 @socketio.on('user_join')
 def handle_debug(roomID):
@@ -116,19 +104,22 @@ def handle_room(dataPackage):
         print('Doc ID: ' + str(doc.id))
         if doc.id == 'default':
             print('Default Document | Room:' + str(converted_obj['room']) + ' | State: '+ doc.state)
+            socketio.emit('save_document_client', {'room': converted_obj['room']}, room=converted_obj['room'])
             join_room(converted_obj['room'])
-            socketio.emit('load_document', {'data': doc.state}, room=str(converted_obj['room']))
+            socketio.emit('load_document', {'data': doc.state, 'room': converted_obj['room']}, room=str(converted_obj['room']))
         else:
             if doc.owner_Id == converted_obj['UID']:
                 print('Owner Document | Room:' + str(converted_obj['room']) + ' | State: '+ doc.state)
+                socketio.emit('save_document_client', {'room': converted_obj['room']}, room=converted_obj['room'])
                 join_room(converted_obj['room'])
-                socketio.emit('load_document', {'data': doc.state}, room=converted_obj['room'])
+                socketio.emit('load_document', {'data': doc.state, 'room': converted_obj['room']}, room=converted_obj['room'])
             else:
                 allowed = json.loads(doc.allowed_Ids)
                 if str(converted_obj['UID']) in allowed:
                     print('Allowed Document | Room:' + str(converted_obj['room']) + ' | State: '+ doc.state)
+                    socketio.emit('save_document_client', {'room': converted_obj['room']}, room=converted_obj['room'])
                     join_room(converted_obj['room'])
-                    socketio.emit('load_document', {'data': doc.state}, room=converted_obj['room'])
+                    socketio.emit('load_document', {'data': doc.state, 'room': converted_obj['room']}, room=converted_obj['room'])
                 else:
                     socketio.emit('document_access_denied', {'UID': str(converted_obj['UID'])})
     else:
@@ -146,8 +137,8 @@ def handle_room(dataPackage):
 @socketio.on('room_leave')
 def handle_leave_room(dataPackage):
     converted_obj = json.loads(dataPackage)
+    socketio.emit('save_document_client', { 'UID': converted_obj['UID'], 'room': converted_obj['room']}, room=converted_obj['room'])
     print('Room ' + converted_obj['room'] + " Left")
-    socketio.emit('save_document', { 'UID': converted_obj['UID'], 'room': converted_obj['room']}, room=converted_obj['room'])
     leave_room(converted_obj['room'])
 
 @socketio.on('save_document_reply')
@@ -181,30 +172,66 @@ def handle_editor_change(jsonobj):
 #### Routes ####
 
 @app.route('/')
-def editor():
-    return render_template('editor.html')
+def editor(room = None):
+    if session.get('logged_in') is None:
+        session['logged_in'] = False
+
+    if session.get('UID') is not None:
+        if room == None: 
+            return render_template('editor.html')
+        else:
+            if isAllowedInDoc(session.get('UID'), room):
+                session['room'] = room
+                return render_template('editor.html')
+            else:
+                return render_template('editor.html', error='noperm')
+    else:
+        form = LoginForm()
+        return redirect(url_for('login'))
+
+@app.route('/logout')
+def logout():
+    form = LoginForm()
+    session['logged_in'] = False
+    session['UID'] = None
+    return render_template('login.html', form=form)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if isAuth():
+        print(getUser())
+        return redirect(url_for('account', uuid=getUser().id))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user:
             if check_password_hash(user.password, form.password.data):
                 session['logged_in'] = True
-                return redirect(url_for('account', error='none'))
+                session['UID'] = user.id
+                return redirect(url_for('account', uuid=user.id))
             else:
-                return redirect(url_for('account', error='password'))
+                return redirect(url_for('login', error='password'))
         else:
-            return redirect(url_for('account', error='username'))
+            return redirect(url_for('login', error='username'))
     return render_template('login.html', form=form)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    if isAuth():
+        return redirect(url_for('account', uuid=getUser().id))
     form = RegisterForm()
     if form.validate_on_submit():
+        user_uuid = str(uuid.uuid4())
+        username_row = User.query.filter_by(username=form.username.data).count()
+        uuid_row = User.query.filter_by(id=user_uuid).count()
+        if username_row != 0:
+            #err username is taken
+            return render_template('signup.html', form=form, error='nameTaken')
+        if uuid_row != 0:
+            user_uuid = str(uuid.uuid4())
+
         hashed_pwd = generate_password_hash(form.password.data, method='sha256')
-        new_user = User(username=form.username.data, email=form.email.data, password=hashed_pwd)
+        new_user = User(id=user_uuid,username=form.username.data, email=form.email.data, password=hashed_pwd)
         db.session.add(new_user)
         db.session.commit()
 
@@ -213,8 +240,44 @@ def signup():
 
 @app.route('/account')
 def account():
-    error = request.args.get('error')
-    return render_template('account.html', error=error)
+    uuid = request.args.get('uuid')
+    if session.get('UID') is not None:
+        documents = Document.query.filter_by(owner_Id=uuid).all()
+        return render_template('account.html', docs=documents)
+    else:
+        form = LoginForm()
+        return redirect(url_for('login'))
+    
+
+
+
+
+def isAllowedInDoc(UID, docID):
+    doc = Document.query.filter_by(id=docID).first()
+    if doc.owner_Id == UID:
+        return True
+    else:
+        allowed = json.loads(doc.allowed_Ids)
+        if UID in allowed:
+            return True
+        else:
+            return False
+
+def isAuth():
+    return session.get('logged_in')
+
+def getUUID():
+    if isAuth():
+        return session.get('UID')
+    else:
+        raise Exception("User not logged in")
+
+def getUser(UID = None):
+    if UID == None:
+        return User.query.filter_by(id=getUUID()).first()
+    else:
+        return User.query.filter_by(id=UID).first()
+
 
 #### Other ####
 

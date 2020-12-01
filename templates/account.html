@@ -10,8 +10,17 @@
     <div>
         <h1>Account Page {{ error }}</h1>
         <ul id="account-saved-documents">
-            <li><a href="#">Saved Document</a></li>
+            {% for doc in docs %}
+            <li><a href="{{ url_for('editor') }}">{{ doc.id }}</a></li>
+            {% endfor %}
         </ul>
     </div>
 </main>
+<script>
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const uuid = urlParams.get('uuid')
+    console.log("[Client] UUID: " + uuid);
+    sessionStorage.setItem('UID', uuid);
+</script>
 {% endblock %}

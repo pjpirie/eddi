@@ -25,27 +25,35 @@
     <div class="control-button" id="control-save">
         <p>save</p>
     </div>
+    <div class="control-input">
+        <input type="text" name="room-input" id="room-input" placeholder="Input Room Name Here...">
+        <input type="submit" value="Open Room">
+    </div>
 </div>
 {% endblock %}
 {% block body %}
 <div id="editor">
-    function foo(items) {
-    var x = "All this is syntax highlighted";
-    return x;
-    }
+    //If you see this refresh the page :D
 </div>
 
 <script>
+    // function foo(items) {
+    // var x = "All this is syntax highlighted";
+    // return x;
+    // }
     // sessionStorage.clear();
-    if (sessionStorage.getItem('UID') == (null || undefined)) {
-        sessionStorage.setItem('UID', Math.random() * 10000000000000000);
-        console.log("[E] UID Created");
-    } else {
-        console.log("[E] UID Exists");
-    }
+    // if (sessionStorage.getItem('UID') == (null || undefined)) {
+        // sessionStorage.setItem('UID', Math.random() * 10000000000000000);
+        // console.log("[E] UID Created");
+    // } else {
+        // console.log("[E] UID Exists");
+    // }
         // console.log(document.cookie)
         // const UID = 
 </script>
 <script src="{{ url_for('static', filename='js/ace.js') }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for('static', filename='js/socket-editor.js') }}" type="text/javascript" charset="utf-8"></script>
+<script>
+    changeRoom(sessionStorage.getItem('room'));
+</script>
 {% endblock %}
