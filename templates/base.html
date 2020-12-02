@@ -8,29 +8,52 @@
         integrity="sha512-AcZyhRP/tbAEsXCCGlziPun5iFvcSUpEz2jKkx0blkYKbxU81F+iq8FURwPn1sYFeksJ+sDDrI5XujsqSobWdQ=="
         crossorigin="anonymous"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <script src="{{ url_for('static', filename='js/init.js') }}" type="text/javascript" charset="utf-8"></script>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='fav/favicon.ico')}}">
+    <script src="{{ url_for('static', filename='js/init.js') }}" type="text/javascript" charset="utf-8">
+    </script>
     {% block head %}{% endblock %}
 </head>
 
 <body>
     <header>
         <nav>
-            <h1><a href="{{ url_for('editor') }}">Eddi</a></h1>
+            <h1><a href="{{ url_for('landing') }}">Eddi</a></h1>
             {% if session['logged_in'] == True %}
             <ul>
                 <li>
-                    <a href="{{ url_for('account') }}">Account</a>
+                    <a href="{{ url_for('landing') }}">Home</a>
                 </li>
                 <li>
+                    <a href="{{ url_for('editor') }}">Editor</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('about') }}">About</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('contact') }}">Contact</a>
+                </li>
+                <li class="account-btn">
+                    <a href="{{ url_for('account') }}">Account</a>
+                </li>
+                <li class="account-btn">
                     <a href="{{ url_for('logout') }}">Log out</a>
                 </li>
             </ul>
             {% else %}
             <ul>
                 <li>
-                    <a href="{{ url_for('login') }}">Login</a>
+                    <a href="{{ url_for('landing') }}">Home</a>
                 </li>
                 <li>
+                    <a href="{{ url_for('about') }}">About</a>
+                </li>
+                <li>
+                    <a href="{{ url_for('contact') }}">Contact</a>
+                </li>
+                <li class="account-btn">
+                    <a href="{{ url_for('login') }}">Login</a>
+                </li>
+                <li class="account-btn">
                     <a href="{{ url_for('signup') }}">Sign up</a>
                 </li>
             </ul>

@@ -6,10 +6,12 @@ socket.on('connect', function () {
     socket.emit('user_connect', {
         data: 'User Connected'
     });
-    console.log("Connected");
-    if (sessionStorage.getItem('room') == (null || undefined)) {
+    console.log("[Client] Connected");
+    if (sessionStorage.getItem('room') == null || sessionStorage.getItem('room') == undefined) {
+        console.log("[Client] No Room Selected Joining Default");
         changeRoom('default');
     } else {
+        console.log("[Client] Joining " + sessionStorage.getItem('room'));
         changeRoom(sessionStorage.getItem('room'));
     }
 });
@@ -19,13 +21,7 @@ socket.on('debug_reply', function (e) {
     console.table(e)
 });
 
-socket.on('document_access_denied', function (e) {
-    if (sessionStorage.getItem('UID') == e.UID) {
-        console.log("[Document] Access Denied, Setting Room to Default");
-        console.table(e);
-        changeRoom('default');
-    }
-});
+
 
 // socket.on('disconnecting', () => {
 //     const rooms = Object.keys(socket.rooms);
@@ -41,7 +37,17 @@ function setUID(uid) {
     sessionStorage.setItem('UID', uid);
 }
 
-function changeRoom(roomID) {
+function joinRoom(roomID) {
+    let UID = sessionStorage.getItem('UID');
+    let data = {
+        'room': roomID,
+        'UID': UID
+    }
+    socket.emit('room', JSON.stringify(data));
+    sessionStorage.setItem('room', roomID)
+}
+
+async function changeRoom(roomID) {
     let UID = sessionStorage.getItem('UID');
     let data = {
         'room': roomID,
@@ -57,15 +63,14 @@ function changeRoom(roomID) {
         }
     } else {
         try {
-            socket.emit('room_leave', JSON.stringify({ 'UID': UID, 'room': sessionStorage.getItem('room') }));
-            console.log('Success: Left Room ' + sessionStorage.getItem('room'));
-            try {
+            requestLeave(sessionStorage.getItem('room')).then((msg) => {
+                console.log('[Client] Success: Left Room ' + sessionStorage.getItem('room'));
                 socket.emit('room', JSON.stringify(data));
-                console.log('Success: Changed Rooms to ' + roomID);
+                console.log('[Client] Success: Changed Rooms to ' + roomID);
                 sessionStorage.setItem('room', roomID)
-            } catch (e) {
-                console.log('Failed: Changed Rooms | Reason:' + e);
-            }
+                document.querySelector('#room-input').value = sessionStorage.getItem('room');
+
+            });
         } catch (e) {
             console.log('Failed: Leave Room | Reason:' + e);
         }
@@ -73,6 +78,35 @@ function changeRoom(roomID) {
 
     }
 
+}
+
+function requestLeave(roomID) {
+    return new Promise((resolve) => {
+        console.warn('Promise Started | Room ID:' + roomID);
+        socket.emit('room_leave', JSON.stringify({ 'UID': sessionStorage.getItem('UID'), 'room': roomID }));
+        socket.on('room_leave_responce', (res) => {
+            console.warn('Promise Done');
+            resolve(res);
+        });
+    });
+}
+
+async function leaveRoom(roomID) {
+    const reply = await requestLeave(docID);
+    left = new Promise((resolve, reject) => {
+        if (reply) {
+            resolve('Room Left: ' + reply);
+        } else {
+            reject('Leave Failed: ' + reply);
+        }
+    });
+    left.then((msg) => {
+        console.log('[Client] ' + msg);
+        // console.table(data);
+    }).catch((msg) => {
+        console.warn('[Client] ' + msg);
+    });
+    return;
 }
 
 function changeEditor(roomID) {

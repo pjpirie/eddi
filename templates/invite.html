@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block head %}
+{% endblock %}
+
+
+
+{% block body %}
+<main>
+    <form class="form-custom" id="form-login" method="POST" action="/invite">
+        <h2 class="form-custom-heading">Invite To Document</h2>
+        {{ form.hidden_tag() }}
+        {{ form.csrf_token }}
+        {{ form.invited_uuid.label }}
+        {{ form.invited_uuid }}
+        {{ form.doc_id.label }}
+        {{ form.doc_id }}
+        <button class="form-custom-button" type="submit">Send Invite</button>
+    </form>
+</main>
+{% endblock %}

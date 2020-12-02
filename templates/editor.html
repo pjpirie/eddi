@@ -4,12 +4,28 @@
 <style type="text/css" media="screen">
     #editor {
         position: absolute;
-        top: 10vh;
-        right: 0;
+        top: 20vh;
         bottom: 0;
         left: 0;
+        width: 50vw;
+    }
+
+    #console-output {
+        position: absolute;
+        top: 20vh;
+        right: 0;
+        bottom: 0;
+        width: 50vw;
+        background: #424242;
+    }
+
+    #console-output iframe {
+        width: 100%;
+        height: 100%;
+        background: #424242;
     }
 </style>
+
 {% endblock %}
 
 
@@ -27,13 +43,43 @@
     </div>
     <div class="control-input">
         <input type="text" name="room-input" id="room-input" placeholder="Input Room Name Here...">
-        <input type="submit" value="Open Room">
+        <input type="submit" value="Create Room"
+            onclick="changeRoom(document.querySelector('#room-input').value != null ? document.querySelector('#room-input').value : 'default')">
+    </div>
+    <div class="control-input">
+        <select name="roomSelector" id="roomSelector"
+            onchange="changeRoom(document.querySelector('#roomSelector').value)">
+            {% for doc in docs %}
+            <option value="{{ doc.id }}">{{ doc.id }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="control-input">
+        <select name="languageSelector" id="languageSelector"
+            onchange="changeLanguage(document.querySelector('#languageSelector').value)">
+            <option value="javascript" selected>JavaScript</option>
+            <!-- <option value="python">Python</option> -->
+            <option value="html">HTML</option>
+            <option value="css">CSS</option>
+        </select>
+    </div>
+    <div class="control-input">
+        <select name="themeSelector" id="themeSelector"
+            onchange="changeTheme(document.querySelector('#themeSelector').value)">
+            <option value="monokai" selected>Monokai</option>
+            <option value="dreamweaver">Dreamweaver</option>
+            <option value="dracula">Dracula</option>
+            <option value="github">GitHub</option>
+        </select>
     </div>
 </div>
 {% endblock %}
 {% block body %}
 <div id="editor">
     //If you see this refresh the page :D
+</div>
+<div id="console-output">
+
 </div>
 
 <script>
@@ -54,6 +100,31 @@
 <script src="{{ url_for('static', filename='js/ace.js') }}" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for('static', filename='js/socket-editor.js') }}" type="text/javascript" charset="utf-8"></script>
 <script>
+    {% if room is defined %}
+    console.log('[Jinja] Room: {{ room }}');
+    changeRoom('{{ room }}');
+    {% else %}
     changeRoom(sessionStorage.getItem('room'));
+    {% endif %}
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const room = urlParams.get('room')
+    if (room != null) {
+        sessionStorage.setItem('room', room);
+        changeRoom(sessionStorage.getItem('room'));
+    }
+    document.querySelector('#room-input').value = sessionStorage.getItem('room');
+    document.querySelector('#roomSelector').value = sessionStorage.getItem('room');
+    // window.onbeforeunload = () => {
+    //     saveDocument(sessionStorage.getItem('room'));
+    // }
+</script>
+<script>
+    window.onbeforeunload = async function (e) {
+        // console.log('It worked');
+        // saveDocument(sessionStorage.getItem('room'));
+        await requestSave(sessionStorage.getItem('room'))
+        return "Dude, are you sure you want to leave? Think of the kittens!";
+    };
 </script>
 {% endblock %}

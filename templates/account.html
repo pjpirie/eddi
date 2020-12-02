@@ -7,11 +7,12 @@
 
 {% block body %}
 <main>
-    <div>
+    <div id="account-page">
         <h1>Account Page {{ error }}</h1>
         <ul id="account-saved-documents">
+            <!-- <li class="doc-item"><a href={{ url_for('editor', room='newRoomAccountCall') }}>Create New</a></li> -->
             {% for doc in docs %}
-            <li><a href="{{ url_for('editor') }}">{{ doc.id }}</a></li>
+            <li class="doc-item"><a href={{ url_for('editor', room=doc.id) }}>{{ doc.id }}</a></li>
             {% endfor %}
         </ul>
     </div>
@@ -20,7 +21,9 @@
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     const uuid = urlParams.get('uuid')
-    console.log("[Client] UUID: " + uuid);
-    sessionStorage.setItem('UID', uuid);
+    if (uuid != null) {
+        sessionStorage.setItem('UID', uuid);
+    }
+    console.log("[Client] UUID: " + sessionStorage.getItem('UID'));
 </script>
 {% endblock %}
