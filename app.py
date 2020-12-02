@@ -288,14 +288,24 @@ def contact():
 def invite():
     if isAuth() == False:
         return redirect(url_for('login'))
+
+    
+    user_rows = User.query.all()
+    doc_rows = Document.query.all()
+    users = []
+    docs = []
     for user in user_rows:
         if user.id != getUUID():
             users.append((user.id, user.username))
     for doc in doc_rows:
         if doc.owner_Id == getUUID():
             docs.append((doc.id, doc.id))
+    # print(str(users))
     form = InviteForm()
+    form.invited_uuid.choices = users
+    form.doc_id.choices = docs
     if form.validate_on_submit():
+        print('[Eddi][Server][Invite] Submitted')
         user = User.query.filter_by(id=form.invited_uuid.data).first()
         doc = Document.query.filter_by(id=form.doc_id.data).first()
         if user:
@@ -307,8 +317,8 @@ def invite():
                     print(str(allowed))
                     doc.allowed_Ids = str(allowed)
                     db.session.commit()
-                    
-            
+                return redirect(url_for('account'))
+
     return render_template('invite.html', form=form)
 
     
@@ -348,6 +358,8 @@ def getAllowedDocs():
     docs = Document.query.all()
     allowedDocs = []
     for doc in docs:
+        if doc.id == 'default':
+            allowedDocs.append(doc)
         if doc.owner_Id == getUUID():
             allowedDocs.append(doc)
         if getUUID() in doc.allowed_Ids:

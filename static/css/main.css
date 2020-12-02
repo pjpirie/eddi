@@ -287,3 +287,11 @@ a{
     display: flex;
     flex-direction: column;
 }
+.control-input{
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #1f1f1f;
+    padding: 0 10px;
+}
